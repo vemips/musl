@@ -36,7 +36,7 @@ Optional features:
   --disable-static        inhibit building static library [enabled]
 
 Optional packages:
-  --with-malloc=...       choose malloc implementation [mallocng]
+  --with-malloc=...       choose malloc implementation [oldmalloc]
 
 Some influential environment variables:
   CC                      C compiler command [detected]
@@ -117,6 +117,7 @@ fi
 
 CFLAGS_C99FSE=
 CFLAGS_AUTO=
+CFLAGS_AUTO_LTO=
 CFLAGS_MEMOPS=
 CFLAGS_NOSSP=
 CFLAGS_TRY=
@@ -238,9 +239,11 @@ CROSS_COMPILE="$target-"
 # Find a C compiler to use
 #
 printf "checking for C compiler... "
-trycc ${CROSS_COMPILE}gcc
-trycc ${CROSS_COMPILE}c99
-trycc ${CROSS_COMPILE}cc
+#trycc ${CROSS_COMPILE}gcc
+#trycc ${CROSS_COMPILE}c99
+#trycc ${CROSS_COMPILE}cc
+CFLAGS=-Wno-unused-value
+trycc mipsc
 printf "%s\n" "$CC"
 test -n "$CC" || { echo "$0: cannot find a C compiler" ; exit 1 ; }
 
@@ -448,7 +451,7 @@ esac
 
 if test "$optimize" = no ; then :
 else
-tryflag CFLAGS_AUTO -O2
+tryflag CFLAGS_AUTO -O3 || tryflag CFLAGS_AUTO -O2 || tryflag CFLAGS_AUTO -Os || tryflag CFLAGS_AUTO -Oz
 tryflag CFLAGS_AUTO -fno-align-jumps
 tryflag CFLAGS_AUTO -fno-align-functions
 tryflag CFLAGS_AUTO -fno-align-loops
@@ -573,6 +576,8 @@ tryflag CFLAGS_AUTO -Wunused-function
 tryflag CFLAGS_AUTO -Wunused-label
 tryflag CFLAGS_AUTO -Wunused-variable
 fi
+
+tryflag CFLAGS_AUTO_LTO -flto=full
 
 # Determine if the compiler produces position-independent code (PIC)
 # by default. If so, we don't need to compile separate object files
@@ -815,7 +820,9 @@ libdir = $libdir
 includedir = $includedir
 syslibdir = $syslibdir
 CC = $CC
+AS = $AS
 CFLAGS = $CFLAGS
+CFLAGS_AUTO_LTO = $CFLAGS_AUTO_LTO
 CFLAGS_AUTO = $CFLAGS_AUTO
 CFLAGS_C99FSE = $CFLAGS_C99FSE
 CFLAGS_MEMOPS = $CFLAGS_MEMOPS

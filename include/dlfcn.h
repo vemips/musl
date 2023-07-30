@@ -24,7 +24,7 @@ char  *dlerror(void);
 void  *dlopen(const char *, int);
 void  *dlsym(void *__restrict, const char *__restrict);
 
-#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
+#if defined(_GNU_SOURCE) || defined(_BSD_SOURCE) || 1 /* vemips */
 typedef struct {
 	const char *dli_fname;
 	void *dli_fbase;

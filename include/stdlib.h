@@ -161,6 +161,15 @@ struct __locale_struct;
 float strtof_l(const char *__restrict, char **__restrict, struct __locale_struct *);
 double strtod_l(const char *__restrict, char **__restrict, struct __locale_struct *);
 long double strtold_l(const char *__restrict, char **__restrict, struct __locale_struct *);
+
+/* vemips */
+
+long strtol_l(const char *__restrict, char **__restrict, int, struct __locale_struct *);
+unsigned long strtoul_l(const char *__restrict, char **__restrict, int, struct __locale_struct *);
+long long strtoll_l(const char *__restrict, char **__restrict, int, struct __locale_struct *);
+unsigned long long strtoull_l(const char *__restrict, char **__restrict, int, struct __locale_struct *);
+
+/* vemips */
 #endif
 
 #if defined(_LARGEFILE64_SOURCE)

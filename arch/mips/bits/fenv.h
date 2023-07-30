@@ -23,3 +23,5 @@ typedef struct {
 } fenv_t;
 
 #define FE_DFL_ENV      ((const fenv_t *) -1)
+// VEMIPS
+#define FE_NOMASK_ENV   ((const fenv_t *) -2)

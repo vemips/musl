@@ -6,7 +6,11 @@ extern "C" {
 #endif
 
 char *dirname(char *);
+#ifdef _GNU_SOURCE
+char *basename(const char *);
+#else
 char *basename(char *);
+#endif
 
 #ifdef __cplusplus
 }

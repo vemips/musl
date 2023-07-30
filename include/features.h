@@ -1,6 +1,34 @@
 #ifndef _FEATURES_H
 #define _FEATURES_H
 
+/* vemips */
+
+#define _MUSL_VEMIPS 1
+
+/*
+#ifndef _XOPEN_SOURCE
+#	define _XOPEN_SOURCE 700
+#endif
+#ifndef _POSIX_SOURCE
+#	define _POSIX_SOURCE 1
+#endif
+#ifndef _GNU_SOURCE
+#	define _GNU_SOURCE 1
+#endif
+#ifndef _POSIX_C_SOURCE
+#	define _POSIX_C_SOURCE 1
+#endif
+
+#ifndef __GNUC_PREREQ
+#	define __GNUC_PREREQ(x, y) 1
+#endif
+#ifndef __GLIBC_PREREQ
+#	define __GLIBC_PREREQ(x, y) 1
+#endif
+*/
+
+/* vemips */
+
 #if defined(_ALL_SOURCE) && !defined(_GNU_SOURCE)
 #define _GNU_SOURCE 1
 #endif

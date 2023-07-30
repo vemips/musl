@@ -30,6 +30,7 @@ void *aligned_alloc(size_t align, size_t len)
 	struct chunk *c = MEM_TO_CHUNK(mem);
 	struct chunk *n = MEM_TO_CHUNK(new);
 
+#if !defined(_MUSL_VEMIPS)
 	if (IS_MMAPPED(c)) {
 		/* Apply difference between aligned and original
 		 * address to the "extra" field of mmapped chunk. */
@@ -37,6 +38,7 @@ void *aligned_alloc(size_t align, size_t len)
 		n->csize = c->csize - (new-mem);
 		return new;
 	}
+#endif
 
 	struct chunk *t = NEXT_CHUNK(c);
 

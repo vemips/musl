@@ -32,7 +32,11 @@ struct bin {
 
 #define C_INUSE  ((size_t)1)
 
-#define IS_MMAPPED(c) !((c)->csize & (C_INUSE))
+#if defined(_MUSL_VEMIPS)
+#	define IS_MMAPPED(c) (0)
+#else
+#	define IS_MMAPPED(c) !((c)->csize & (C_INUSE))
+#endif
 
 hidden void __bin_chunk(struct chunk *);
 

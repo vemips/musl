@@ -17,7 +17,7 @@ includedir = $(prefix)/include
 libdir = $(prefix)/lib
 syslibdir = /lib
 
-MALLOC_DIR = mallocng
+MALLOC_DIR = oldmalloc
 SRC_DIRS = $(addprefix $(srcdir)/,src/* src/malloc/$(MALLOC_DIR) crt ldso $(COMPAT_SRC_DIRS))
 BASE_GLOBS = $(addsuffix /*.c,$(SRC_DIRS))
 ARCH_GLOBS = $(addsuffix /$(ARCH)/*.[csS],$(SRC_DIRS))
@@ -42,13 +42,18 @@ LDFLAGS =
 LDFLAGS_AUTO =
 LIBCC = -lgcc
 CPPFLAGS =
-CFLAGS =
-CFLAGS_AUTO = -Os -pipe
-CFLAGS_C99FSE = -std=c99 -ffreestanding -nostdinc 
+CFLAGS = -ffreestanding -fno-builtin -pipe -O3
+CFLAGS_AUTO = -ffreestanding -fno-builtin -pipe -O3
+CFLAGS_AUTO_LTO =
+CFLAGS_C99FSE = -std=c99 -ffreestanding -nostdinc
 
 CFLAGS_ALL = $(CFLAGS_C99FSE)
-CFLAGS_ALL += -D_XOPEN_SOURCE=700 -I$(srcdir)/arch/$(ARCH) -I$(srcdir)/arch/generic -Iobj/src/internal -I$(srcdir)/src/include -I$(srcdir)/src/internal -Iobj/include -I$(srcdir)/include
-CFLAGS_ALL += $(CPPFLAGS) $(CFLAGS_AUTO) $(CFLAGS)
+#CFLAGS_ALL += -D_GNU_SOURCE
+CFLAGS_ALL += -D_XOPEN_SOURCE=700
+CFLAGS_ALL += -I$(srcdir)/arch/$(ARCH) -I$(srcdir)/arch/generic -Iobj/src/internal -I$(srcdir)/src/include -I$(srcdir)/src/internal -Iobj/include -I$(srcdir)/include
+CFLAGS_AS_ALL = $(CFLAGS_ALL) $(CPPFLAGS) $(CFLAGS_AUTO) $(CFLAGS)
+CFLAGS_ALL += $(CPPFLAGS) $(CFLAGS_AUTO) $(CFLAGS) $(CFLAGS_AUTO_LTO)
+CFLAGS_EXTRA =
 
 LDFLAGS_ALL = $(LDFLAGS_AUTO) $(LDFLAGS)
 
@@ -67,11 +72,11 @@ CRT_LIBS = $(addprefix lib/,$(notdir $(CRT_OBJS)))
 STATIC_LIBS = lib/libc.a
 SHARED_LIBS = lib/libc.so
 TOOL_LIBS = lib/musl-gcc.specs
-ALL_LIBS = $(CRT_LIBS) $(STATIC_LIBS) $(SHARED_LIBS) $(EMPTY_LIBS) $(TOOL_LIBS)
+ALL_LIBS = $(CRT_LIBS) $(STATIC_LIBS) $(EMPTY_LIBS) $(TOOL_LIBS)
 ALL_TOOLS = obj/musl-gcc
 
 WRAPCC_GCC = gcc
-WRAPCC_CLANG = clang
+WRAPCC_CLANG = mipsc
 
 LDSO_PATHNAME = $(syslibdir)/ld-musl-$(ARCH)$(SUBARCH).so.1
 
@@ -86,7 +91,7 @@ all:
 
 else
 
-all: $(ALL_LIBS) $(ALL_TOOLS)
+all: $(ALL_LIBS) $(ALL_TOOLS) lib/libcrt.a
 
 OBJ_DIRS = $(sort $(patsubst %/,%,$(dir $(ALL_LIBS) $(ALL_TOOLS) $(ALL_OBJS) $(GENH) $(GENH_INT))) obj/include)
 
@@ -113,63 +118,86 @@ obj/crt/crt1.o obj/crt/scrt1.o obj/crt/rcrt1.o obj/ldso/dlstart.lo: $(srcdir)/ar
 
 obj/crt/rcrt1.o: $(srcdir)/ldso/dlstart.c
 
-obj/crt/Scrt1.o obj/crt/rcrt1.o: CFLAGS_ALL += -fPIC
+obj/crt/Scrt1.o obj/crt/rcrt1.o: CFLAGS_EXTRA += -fPIC
 
 OPTIMIZE_SRCS = $(wildcard $(OPTIMIZE_GLOBS:%=$(srcdir)/src/%))
 $(OPTIMIZE_SRCS:$(srcdir)/%.c=obj/%.o) $(OPTIMIZE_SRCS:$(srcdir)/%.c=obj/%.lo): CFLAGS += -O3
 
 MEMOPS_OBJS = $(filter %/memcpy.o %/memmove.o %/memcmp.o %/memset.o, $(LIBC_OBJS))
-$(MEMOPS_OBJS) $(MEMOPS_OBJS:%.o=%.lo): CFLAGS_ALL += $(CFLAGS_MEMOPS)
+$(MEMOPS_OBJS) $(MEMOPS_OBJS:%.o=%.lo): CFLAGS_EXTRA += $(CFLAGS_MEMOPS)
 
 NOSSP_OBJS = $(CRT_OBJS) $(LDSO_OBJS) $(filter \
 	%/__libc_start_main.o %/__init_tls.o %/__stack_chk_fail.o \
 	%/__set_thread_area.o %/memset.o %/memcpy.o \
 	, $(LIBC_OBJS))
-$(NOSSP_OBJS) $(NOSSP_OBJS:%.o=%.lo): CFLAGS_ALL += $(CFLAGS_NOSSP)
+$(NOSSP_OBJS) $(NOSSP_OBJS:%.o=%.lo): CFLAGS_EXTRA += $(CFLAGS_NOSSP)
 
-$(CRT_OBJS): CFLAGS_ALL += -DCRT
+$(CRT_OBJS): CFLAGS_EXTRA += -DCRT
 
-$(LOBJS) $(LDSO_OBJS): CFLAGS_ALL += -fPIC
+$(LOBJS) $(LDSO_OBJS): CFLAGS_EXTRA += -fPIC
 
-CC_CMD = $(CC) $(CFLAGS_ALL) -c -o $@ $<
+CC_CMD = $(CC) $(CFLAGS_ALL) $(CFLAGS_EXTRA) -c -o $@ $<
+CC_AS_CMD = $(CC) $(CFLAGS_AS_ALL) $(CFLAGS_EXTRA) -fno-lto -c -o $@ $<
 
 # Choose invocation of assembler to be used
 ifeq ($(ADD_CFI),yes)
-	AS_CMD = LC_ALL=C awk -f $(srcdir)/tools/add-cfi.common.awk -f $(srcdir)/tools/add-cfi.$(ARCH).awk $< | $(CC) $(CFLAGS_ALL) -x assembler -c -o $@ -
+	AS_CMD = LC_ALL=C awk -f $(srcdir)/tools/add-cfi.common.awk -f $(srcdir)/tools/add-cfi.$(ARCH).awk $< | $(CC) $(CFLAGS_AS_ALL) -x assembler -c -o $@ -
 else
-	AS_CMD = $(CC_CMD)
+	AS_CMD = $(CC_AS_CMD)
 endif
 
 obj/%.o: $(srcdir)/%.s
 	$(AS_CMD)
 
 obj/%.o: $(srcdir)/%.S
-	$(CC_CMD)
+	$(CC_AS_CMD)
 
 obj/%.o: $(srcdir)/%.c $(GENH) $(IMPH)
 	$(CC_CMD)
+
+obj/crt/Scrt1.o: $(srcdir)/crt/Scrt1.c $(GENH) $(IMPH)
+	$(CC_AS_CMD)
+
+obj/crt/crt1.o: $(srcdir)/crt/crt1.c $(GENH) $(IMPH)
+	$(CC_AS_CMD)
+
+obj/crt/rcrt1.o: $(srcdir)/crt/rcrt1.c $(GENH) $(IMPH)
+	$(CC_AS_CMD)
 
 obj/%.lo: $(srcdir)/%.s
 	$(AS_CMD)
 
 obj/%.lo: $(srcdir)/%.S
-	$(CC_CMD)
+	$(CC_AS_CMD)
 
 obj/%.lo: $(srcdir)/%.c $(GENH) $(IMPH)
 	$(CC_CMD)
 
+obj/crt/Scrt1.lo: $(srcdir)/crt/Scrt1.c $(GENH) $(IMPH)
+	$(CC_AS_CMD)
+
+obj/crt/crt1.lo: $(srcdir)/crt/crt1.c $(GENH) $(IMPH)
+	$(CC_AS_CMD)
+
+obj/crt/rcrt1.lo: $(srcdir)/crt/rcrt1.c $(GENH) $(IMPH)
+	$(CC_AS_CMD)
+
 lib/libc.so: $(LOBJS) $(LDSO_OBJS)
+	echo $(LOBJS) $(LDSO_OBJS) $(LIBCC) > args_libc_so.tmp; \
 	$(CC) $(CFLAGS_ALL) $(LDFLAGS_ALL) -nostdlib -shared \
-	-Wl,-e,_dlstart -o $@ $(LOBJS) $(LDSO_OBJS) $(LIBCC)
+	-Wl,-e,_dlstart -o $@ @args_libc_so.tmp; \
+	rm -f args_libc_so.tmp;
 
 lib/libc.a: $(AOBJS)
-	rm -f $@
-	$(AR) rc $@ $(AOBJS)
-	$(RANLIB) $@
+	rm -f $@; \
+	echo $(AOBJS) > args_libc_a.tmp; \
+	$(AR) rcs $@ @args_libc_a.tmp; \
+	rm -f args_libc_a.tmp; \
+	$(RANLIB) $@;
 
 $(EMPTY_LIBS):
 	rm -f $@
-	$(AR) rc $@
+	$(AR) rcs $@
 
 lib/%.o: obj/crt/$(ARCH)/%.o
 	cp $< $@
@@ -221,10 +249,13 @@ install-tools: $(ALL_TOOLS:obj/%=$(DESTDIR)$(bindir)/%)
 install: install-libs install-headers install-tools
 
 musl-git-%.tar.gz: .git
-	 git --git-dir=$(srcdir)/.git archive --format=tar.gz --prefix=$(patsubst %.tar.gz,%,$@)/ -o $@ $(patsubst musl-git-%.tar.gz,%,$@)
+	git --git-dir=$(srcdir)/.git archive --format=tar.gz --prefix=$(patsubst %.tar.gz,%,$@)/ -o $@ $(patsubst musl-git-%.tar.gz,%,$@)
 
 musl-%.tar.gz: .git
-	 git --git-dir=$(srcdir)/.git archive --format=tar.gz --prefix=$(patsubst %.tar.gz,%,$@)/ -o $@ v$(patsubst musl-%.tar.gz,%,$@)
+	git --git-dir=$(srcdir)/.git archive --format=tar.gz --prefix=$(patsubst %.tar.gz,%,$@)/ -o $@ v$(patsubst musl-%.tar.gz,%,$@)
+
+lib/libcrt.a: lib/crt1.o lib/crti.o lib/crtn.o
+	$(AR) rcs $@ lib/crt1.o lib/crti.o lib/crtn.o $<
 
 endif
 

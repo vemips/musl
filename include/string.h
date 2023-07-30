@@ -63,7 +63,15 @@ char *strerror (int);
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
 char *strtok_r (char *__restrict, const char *__restrict, char **__restrict);
+/* vemips */
+
+#	if defined(_GNU_SOURCE)
+char *strerror_r (int, char *, size_t);
+#	else
 int strerror_r (int, char *, size_t);
+#	endif
+
+/* vemips */
 char *stpcpy(char *__restrict, const char *__restrict);
 char *stpncpy(char *__restrict, const char *__restrict, size_t);
 size_t strnlen (const char *, size_t);
@@ -95,6 +103,9 @@ char *strchrnul(const char *, int);
 char *strcasestr(const char *, const char *);
 void *memrchr(const void *, int, size_t);
 void *mempcpy(void *, const void *, size_t);
+#ifndef __cplusplus
+char *basename(const char *);
+#endif
 #endif
 
 #ifdef __cplusplus

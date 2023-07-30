@@ -11,6 +11,10 @@
 #include "malloc_impl.h"
 #include "fork_impl.h"
 
+/* vemips */
+#include "../../vemips_common.h"
+/* ~vemips */
+
 #define malloc __libc_malloc_impl
 #define realloc __libc_realloc
 #define free __libc_free
@@ -21,7 +25,11 @@
 
 static struct {
 	volatile uint64_t binmap;
+#if defined(_MUSL_VEMIPS)
+	struct bin bins[125];
+#else
 	struct bin bins[64];
+#endif
 	volatile int split_merge_lock[2];
 } mal;
 
@@ -161,6 +169,28 @@ static int traverses_stack_p(uintptr_t old, uintptr_t new)
 
 static void *__expand_heap(size_t *pn)
 {
+#if defined(_MUSL_VEMIPS)
+
+	/*
+	// vemips
+	// Changes have been made to this function to make it more sane for our heap allocations.
+	// BRK is _always_ used now.
+	*/
+
+   size_t n = *pn;
+   /* n = (n + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1); */
+
+   uintptr_t brk = (uintptr_t)__syscall(SYS_sbrk, n);
+   if UNLIKELY(brk == (uintptr_t)-1)
+   {
+      errno = ENOMEM;
+      return NULL;
+   }
+   *pn = n;
+   return (void *)brk;
+
+#else
+
 	static uintptr_t brk;
 	static unsigned mmap_step;
 	size_t n = *pn;
@@ -191,6 +221,8 @@ static void *__expand_heap(size_t *pn)
 	*pn = n;
 	mmap_step++;
 	return area;
+
+#endif
 }
 
 static struct chunk *expand_heap(size_t n)
@@ -234,7 +266,11 @@ static struct chunk *expand_heap(size_t n)
 static int adjust_size(size_t *n)
 {
 	/* Result of pointer difference must fit in ptrdiff_t. */
+#if defined(_MUSL_VEMIPS)
+	if (*n-1 > PTRDIFF_MAX - SIZE_ALIGN) {
+#else
 	if (*n-1 > PTRDIFF_MAX - SIZE_ALIGN - PAGE_SIZE) {
+#endif
 		if (*n) {
 			errno = ENOMEM;
 			return -1;
@@ -298,6 +334,7 @@ void *malloc(size_t n)
 
 	if (adjust_size(&n) < 0) return 0;
 
+#if !defined(_MUSL_VEMIPS)
 	if (n > MMAP_THRESHOLD) {
 		size_t len = n + OVERHEAD + PAGE_SIZE - 1 & -PAGE_SIZE;
 		char *base = __mmap(0, len, PROT_READ|PROT_WRITE,
@@ -308,6 +345,7 @@ void *malloc(size_t n)
 		c->psize = SIZE_ALIGN - OVERHEAD;
 		return CHUNK_TO_MEM(c);
 	}
+#endif
 
 	i = bin_index_up(n);
 	if (i<63 && (mal.binmap & (1ULL<<i))) {
@@ -346,7 +384,11 @@ void *malloc(size_t n)
 
 int __malloc_allzerop(void *p)
 {
+#if defined(_MUSL_VEMIPS)
+	return 0;
+#else
 	return IS_MMAPPED(MEM_TO_CHUNK(p));
+#endif
 }
 
 void *realloc(void *p, size_t n)
@@ -364,6 +406,7 @@ void *realloc(void *p, size_t n)
 
 	if (n<=n0 && n0-n<=DONTCARE) return p;
 
+#if !defined(_MUSL_VEMIPS)
 	if (IS_MMAPPED(self)) {
 		size_t extra = self->psize;
 		char *base = (char *)self - extra;
@@ -384,6 +427,7 @@ void *realloc(void *p, size_t n)
 		self->csize = newlen - extra;
 		return CHUNK_TO_MEM(self);
 	}
+#endif
 
 	next = NEXT_CHUNK(self);
 
@@ -479,14 +523,18 @@ void __bin_chunk(struct chunk *self)
 
 	/* Replace middle of large chunks with fresh zero pages */
 	if (size > RECLAIM && (size^(size-osize)) > size-osize) {
+#if !defined(_MUSL_VEMIPS)
 		uintptr_t a = (uintptr_t)self + SIZE_ALIGN+PAGE_SIZE-1 & -PAGE_SIZE;
 		uintptr_t b = (uintptr_t)next - SIZE_ALIGN & -PAGE_SIZE;
+#endif
 		int e = errno;
-#if 1
+#if !defined(_MUSL_VEMIPS)
+#	if 1
 		__madvise((void *)a, b-a, MADV_DONTNEED);
-#else
+#	else
 		__mmap((void *)a, b-a, PROT_READ|PROT_WRITE,
 			MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED, -1, 0);
+#	endif
 #endif
 		errno = e;
 	}
@@ -512,9 +560,11 @@ void free(void *p)
 
 	struct chunk *self = MEM_TO_CHUNK(p);
 
+#if !defined(_MUSL_VEMIPS)
 	if (IS_MMAPPED(self))
 		unmap_chunk(self);
 	else
+#endif
 		__bin_chunk(self);
 }
 

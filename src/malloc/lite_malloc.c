@@ -38,7 +38,9 @@ volatile int *const __bump_lockptr = lock;
 static void *__simple_malloc(size_t n)
 {
 	static uintptr_t brk, cur, end;
+#if !defined(_MUSL_VEMIPS)
 	static unsigned mmap_step;
+#endif
 	size_t align=1;
 	void *p;
 
@@ -68,7 +70,12 @@ static void *__simple_malloc(size_t n)
 		    && !traverses_stack_p(brk, brk+req)
 		    && __syscall(SYS_brk, brk+req)==brk+req) {
 			brk = end += req;
-		} else {
+		}
+
+		else {
+#if defined(_MUSL_VEMIPS)
+			return NULL;
+#else
 			int new_area = 0;
 			req = n + PAGE_SIZE-1 & -PAGE_SIZE;
 			/* Only make a new area rather than individual mmap
@@ -94,6 +101,7 @@ static void *__simple_malloc(size_t n)
 			}
 			cur = (uintptr_t)mem;
 			end = cur + req;
+#endif
 		}
 	}
 

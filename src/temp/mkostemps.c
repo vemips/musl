@@ -25,4 +25,13 @@ int __mkostemps(char *template, int len, int flags)
 	return -1;
 }
 
+/* vemips */
+#if defined(O_LARGEFILE) && O_LARGEFILE != 0
+int mkostemps64(char *template, int len, int flags) {
+	return __mkostemps(template, len, flags | O_LARGEFILE);
+}
+#else
+weak_alias(__mkostemps, mkostemps64);
+#endif
+
 weak_alias(__mkostemps, mkostemps);

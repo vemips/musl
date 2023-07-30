@@ -38,6 +38,7 @@ void __funcs_on_exit()
 
 void __cxa_finalize(void *dso)
 {
+	// TODO : this really does need an implementation.
 }
 
 int __cxa_atexit(void (*func)(void *), void *arg, void *dso)
