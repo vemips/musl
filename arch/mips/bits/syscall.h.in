@@ -424,4 +424,5 @@
 #define __NR_cachestat		4451
 #define __NR_fchmodat2		4452
 
+#define __NR_debug                  0xfffc
 #define __NR_sbrk                   0xfffd

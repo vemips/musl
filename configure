@@ -100,7 +100,7 @@ fi
 tryldflag () {
 printf "checking whether linker accepts %s... " "$2"
 echo "typedef int x;" > "$tmpc"
-if $CC $LDFLAGS_TRY -nostdlib -shared "$2" -o /dev/null "$tmpc" >/dev/null 2>&1 ; then
+if $CC $LDFLAGS_TRY -nostdlib "$2" -o /dev/null "$tmpc" ; then
 printf "yes\n"
 eval "$1=\"\${$1} \$2\""
 eval "$1=\${$1# }"
@@ -465,6 +465,8 @@ tryflag CFLAGS_AUTO -fno-tree-ch
 fi
 test "$optimize" = yes && optimize="internal,malloc,string"
 
+CFLAGS_AUTO="$CFLAGS_AUTO -DMUSL_WITH_VEMIPS"
+
 if fnmatch 'no|size' "$optimize" ; then :
 else
 printf "components to be optimized for speed:"
@@ -577,6 +579,7 @@ tryflag CFLAGS_AUTO -Wunused-label
 tryflag CFLAGS_AUTO -Wunused-variable
 fi
 
+tryflag CFLAGS_AUTO_LTO -ffat-lto-objects
 tryflag CFLAGS_AUTO_LTO -flto=full
 
 # Determine if the compiler produces position-independent code (PIC)
