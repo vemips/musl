@@ -10,7 +10,9 @@ struct chunk {
 };
 
 struct bin {
+	#ifndef _MUSL_VEMIPS
 	volatile int lock[2];
+	#endif
 	struct chunk *head;
 	struct chunk *tail;
 };

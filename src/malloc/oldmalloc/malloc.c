@@ -30,38 +30,48 @@ static struct {
 #else
 	struct bin bins[64];
 #endif
+#ifndef _MUSL_VEMIPS
 	volatile int split_merge_lock[2];
+#endif
 } mal;
 
 /* Synchronization tools */
 
 static inline void lock(volatile int *lk)
 {
+	#ifndef _MUSL_VEMIPS
 	int need_locks = libc.need_locks;
 	if (need_locks) {
 		while(a_swap(lk, 1)) __wait(lk, lk+1, 1, 1);
 		if (need_locks < 0) libc.need_locks = 0;
 	}
+	#endif
 }
 
 static inline void unlock(volatile int *lk)
 {
+	#ifndef _MUSL_VEMIPS
 	if (lk[0]) {
 		a_store(lk, 0);
 		if (lk[1]) __wake(lk, 1, 1);
 	}
+	#endif
 }
 
 static inline void lock_bin(int i)
 {
+#ifndef _MUSL_VEMIPS
 	lock(mal.bins[i].lock);
+#endif
 	if (!mal.bins[i].head)
 		mal.bins[i].head = mal.bins[i].tail = BIN_TO_CHUNK(i);
 }
 
 static inline void unlock_bin(int i)
 {
+#ifndef _MUSL_VEMIPS
 	unlock(mal.bins[i].lock);
+#endif
 }
 
 static int first_set(uint64_t x)
@@ -358,7 +368,9 @@ void *malloc(size_t n)
 		}
 		unlock_bin(i);
 	}
+#ifndef _MUSL_VEMIPS
 	lock(mal.split_merge_lock);
+#endif
 	for (mask = mal.binmap & -(1ULL<<i); mask; mask -= (mask&-mask)) {
 		j = first_set(mask);
 		lock_bin(j);
@@ -373,12 +385,16 @@ void *malloc(size_t n)
 	if (!mask) {
 		c = expand_heap(n);
 		if (!c) {
+#ifndef _MUSL_VEMIPS
 			unlock(mal.split_merge_lock);
+#endif
 			return 0;
 		}
 	}
 	trim(c, n);
+#ifndef _MUSL_VEMIPS
 	unlock(mal.split_merge_lock);
+#endif
 	return CHUNK_TO_MEM(c);
 }
 
@@ -446,7 +462,9 @@ void *realloc(void *p, size_t n)
 		return CHUNK_TO_MEM(self);
 	}
 
+#ifndef _MUSL_VEMIPS
 	lock(mal.split_merge_lock);
+#endif
 
 	size_t nsize = next->csize & C_INUSE ? 0 : CHUNK_SIZE(next);
 	if (n0+nsize >= n) {
@@ -458,12 +476,16 @@ void *realloc(void *p, size_t n)
 			next = NEXT_CHUNK(next);
 			self->csize = next->psize = n0+nsize | C_INUSE;
 			trim(self, n);
+#ifndef _MUSL_VEMIPS
 			unlock(mal.split_merge_lock);
+#endif
 			return CHUNK_TO_MEM(self);
 		}
 		unlock_bin(i);
 	}
+#ifndef _MUSL_VEMIPS
 	unlock(mal.split_merge_lock);
+#endif
 
 copy_realloc:
 	/* As a last resort, allocate a new chunk and copy to it. */
@@ -482,7 +504,9 @@ void __bin_chunk(struct chunk *self)
 	/* Crash on corrupted footer (likely from buffer overflow) */
 	if (next->psize != self->csize) a_crash();
 
+#ifndef _MUSL_VEMIPS
 	lock(mal.split_merge_lock);
+#endif
 
 	size_t osize = CHUNK_SIZE(self), size = osize;
 
@@ -519,7 +543,9 @@ void __bin_chunk(struct chunk *self)
 	self->csize = size;
 	next->psize = size;
 	bin_chunk(self, i);
+#ifndef _MUSL_VEMIPS
 	unlock(mal.split_merge_lock);
+#endif
 
 	/* Replace middle of large chunks with fresh zero pages */
 	if (size > RECLAIM && (size^(size-osize)) > size-osize) {
@@ -589,6 +615,7 @@ void __malloc_donate(char *start, char *end)
 
 void __malloc_atfork(int who)
 {
+#ifndef _MUSL_VEMIPS
 	if (who<0) {
 		lock(mal.split_merge_lock);
 		for (int i=0; i<64; i++)
@@ -603,4 +630,5 @@ void __malloc_atfork(int who)
 		mal.split_merge_lock[1] = 0;
 		mal.split_merge_lock[0] = 0;
 	}
+#endif
 }
