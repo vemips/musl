@@ -42,8 +42,8 @@ LDFLAGS =
 LDFLAGS_AUTO =
 LIBCC = -lgcc
 CPPFLAGS =
-CFLAGS = -ffreestanding -fno-builtin -pipe -O3
-CFLAGS_AUTO = -ffreestanding -fno-builtin -pipe -O3
+CFLAGS = -ffreestanding -fno-builtin -pipe
+CFLAGS_AUTO = -ffreestanding -fno-builtin -pipe
 CFLAGS_AUTO_LTO =
 CFLAGS_C99FSE = -std=c99 -ffreestanding -nostdinc
 
@@ -83,6 +83,15 @@ LDSO_PATHNAME = $(syslibdir)/ld-musl-$(ARCH)$(SUBARCH).so.1
 -include config.mak
 -include $(srcdir)/arch/$(ARCH)/arch.mak
 
+ifeq ($(DEBUG),yes)
+	OPT_FLAGS := -g3 -Og
+else
+	OPT_FLAGS := -g0 -O3
+endif
+
+CFLAGS_ALL += $(OPT_FLAGS)
+CFLAGS_AS_ALL += $(OPT_FLAGS)
+
 ifeq ($(ARCH),)
 
 all:
@@ -121,7 +130,7 @@ obj/crt/rcrt1.o: $(srcdir)/ldso/dlstart.c
 obj/crt/Scrt1.o obj/crt/rcrt1.o: CFLAGS_EXTRA += -fPIC
 
 OPTIMIZE_SRCS = $(wildcard $(OPTIMIZE_GLOBS:%=$(srcdir)/src/%))
-$(OPTIMIZE_SRCS:$(srcdir)/%.c=obj/%.o) $(OPTIMIZE_SRCS:$(srcdir)/%.c=obj/%.lo): CFLAGS += -O3
+$(OPTIMIZE_SRCS:$(srcdir)/%.c=obj/%.o) $(OPTIMIZE_SRCS:$(srcdir)/%.c=obj/%.lo): CFLAGS += $(OPT_FLAGS)
 
 MEMOPS_OBJS = $(filter %/memcpy.o %/memmove.o %/memcmp.o %/memset.o, $(LIBC_OBJS))
 $(MEMOPS_OBJS) $(MEMOPS_OBJS:%.o=%.lo): CFLAGS_EXTRA += $(CFLAGS_MEMOPS)
