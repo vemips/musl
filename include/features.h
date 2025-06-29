@@ -4,6 +4,9 @@
 /* vemips */
 
 #define _MUSL_VEMIPS 1
+#define __MUSL_VER_MAJOR__ 1
+#define __MUSL_VER_MINOR__ 2
+#define __MUSL_VER_PATCH__ 5
 
 /*
 #ifndef _XOPEN_SOURCE
