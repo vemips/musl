@@ -10,7 +10,7 @@ struct chunk {
 };
 
 struct bin {
-	#ifndef _MUSL_VEMIPS
+	#if !MUSL_VEMIPS_WITHOUT_LOCKS
 	volatile int lock[2];
 	#endif
 	struct chunk *head;
@@ -20,7 +20,9 @@ struct bin {
 #define SIZE_ALIGN (4*sizeof(size_t))
 #define SIZE_MASK (-SIZE_ALIGN)
 #define OVERHEAD (2*sizeof(size_t))
+#if !MUSL_WITH_VEMIPS
 #define MMAP_THRESHOLD (0x1c00*SIZE_ALIGN)
+#endif
 #define DONTCARE 16
 #define RECLAIM 163840
 
@@ -34,7 +36,7 @@ struct bin {
 
 #define C_INUSE  ((size_t)1)
 
-#if defined(_MUSL_VEMIPS)
+#if MUSL_WITH_VEMIPS
 #	define IS_MMAPPED(c) (0)
 #else
 #	define IS_MMAPPED(c) !((c)->csize & (C_INUSE))

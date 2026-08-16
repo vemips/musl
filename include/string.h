@@ -24,36 +24,36 @@ extern "C" {
 
 #include <bits/alltypes.h>
 
-void *memcpy (void *__restrict, const void *__restrict, size_t);
-void *memmove (void *, const void *, size_t);
-void *memset (void *, int, size_t);
-int memcmp (const void *, const void *, size_t);
-void *memchr (const void *, int, size_t);
+__MUSL_LEAF __MUSL_NOALIAS void *memcpy (void *__restrict, const void *__restrict, size_t);
+__MUSL_LEAF __MUSL_NOALIAS void *memmove (void *, const void *, size_t);
+__MUSL_LEAF __MUSL_NOALIAS void *memset (void *, int, size_t);
+__MUSL_PURE __MUSL_LEAF int memcmp (const void *, const void *, size_t);
+__MUSL_PURE __MUSL_LEAF void *memchr (const void *, int, size_t);
 
-char *strcpy (char *__restrict, const char *__restrict);
-char *strncpy (char *__restrict, const char *__restrict, size_t);
+__MUSL_LEAF __MUSL_NOALIAS char *strcpy (char *__restrict, const char *__restrict);
+__MUSL_LEAF __MUSL_NOALIAS char *strncpy (char *__restrict, const char *__restrict, size_t);
 
-char *strcat (char *__restrict, const char *__restrict);
-char *strncat (char *__restrict, const char *__restrict, size_t);
+__MUSL_LEAF __MUSL_NOALIAS char *strcat (char *__restrict, const char *__restrict);
+__MUSL_LEAF __MUSL_NOALIAS char *strncat (char *__restrict, const char *__restrict, size_t);
 
-int strcmp (const char *, const char *);
-int strncmp (const char *, const char *, size_t);
+__MUSL_PURE __MUSL_LEAF int strcmp (const char *, const char *);
+__MUSL_PURE __MUSL_LEAF int strncmp (const char *, const char *, size_t);
 
-int strcoll (const char *, const char *);
-size_t strxfrm (char *__restrict, const char *__restrict, size_t);
+__MUSL_PURE __MUSL_LEAF int strcoll (const char *, const char *);
+__MUSL_LEAF __MUSL_NOALIAS size_t strxfrm (char *__restrict, const char *__restrict, size_t);
 
-char *strchr (const char *, int);
-char *strrchr (const char *, int);
+__MUSL_PURE __MUSL_LEAF char *strchr (const char *, int);
+__MUSL_PURE __MUSL_LEAF char *strrchr (const char *, int);
 
-size_t strcspn (const char *, const char *);
-size_t strspn (const char *, const char *);
-char *strpbrk (const char *, const char *);
-char *strstr (const char *, const char *);
-char *strtok (char *__restrict, const char *__restrict);
+__MUSL_PURE __MUSL_LEAF size_t strcspn (const char *, const char *);
+__MUSL_PURE __MUSL_LEAF size_t strspn (const char *, const char *);
+__MUSL_PURE __MUSL_LEAF char *strpbrk (const char *, const char *);
+__MUSL_PURE __MUSL_LEAF char *strstr (const char *, const char *);
+__MUSL_LEAF __MUSL_NOALIAS char *strtok (char *__restrict, const char *__restrict);
 
-size_t strlen (const char *);
+__MUSL_PURE __MUSL_LEAF size_t strlen (const char *);
 
-char *strerror (int);
+__MUSL_CONST __MUSL_LEAF char *strerror (int);
 
 #if defined(_BSD_SOURCE) || defined(_GNU_SOURCE)
 #include <strings.h>
@@ -62,49 +62,49 @@ char *strerror (int);
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
-char *strtok_r (char *__restrict, const char *__restrict, char **__restrict);
-/* vemips */
+__MUSL_LEAF __MUSL_NOALIAS char *strtok_r (char *__restrict, const char *__restrict, char **__restrict);
+#if defined(_MUSL_VEMIPS)
 
 #	if defined(_GNU_SOURCE)
-char *strerror_r (int, char *, size_t);
+__MUSL_LEAF __MUSL_NOALIAS char *strerror_r (int, char *, size_t);
 #	else
-int strerror_r (int, char *, size_t);
+__MUSL_LEAF __MUSL_NOALIAS int strerror_r (int, char *, size_t);
 #	endif
 
-/* vemips */
-char *stpcpy(char *__restrict, const char *__restrict);
-char *stpncpy(char *__restrict, const char *__restrict, size_t);
-size_t strnlen (const char *, size_t);
-char *strdup (const char *);
-char *strndup (const char *, size_t);
-char *strsignal(int);
-char *strerror_l (int, locale_t);
-int strcoll_l (const char *, const char *, locale_t);
-size_t strxfrm_l (char *__restrict, const char *__restrict, size_t, locale_t);
-void *memmem(const void *, size_t, const void *, size_t);
+#endif // _MUSL_VEMIPS
+__MUSL_LEAF __MUSL_NOALIAS char *stpcpy(char *__restrict, const char *__restrict);
+__MUSL_LEAF __MUSL_NOALIAS char *stpncpy(char *__restrict, const char *__restrict, size_t);
+__MUSL_PURE __MUSL_LEAF size_t strnlen (const char *, size_t);
+__MUSL_MALLOCA(free, 1) __MUSL_LEAF __MUSL_WARN_DISCARD char *strdup (const char *);
+__MUSL_MALLOCA(free, 1) __MUSL_LEAF __MUSL_WARN_DISCARD char *strndup (const char *, size_t);
+__MUSL_CONST __MUSL_LEAF char *strsignal(int);
+__MUSL_PURE __MUSL_LEAF char *strerror_l (int, locale_t);
+__MUSL_PURE __MUSL_LEAF int strcoll_l (const char *, const char *, locale_t);
+__MUSL_LEAF __MUSL_NOALIAS size_t strxfrm_l (char *__restrict, const char *__restrict, size_t, locale_t);
+__MUSL_PURE __MUSL_LEAF void *memmem(const void *, size_t, const void *, size_t);
 #endif
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) \
  || defined(_BSD_SOURCE)
-void *memccpy (void *__restrict, const void *__restrict, int, size_t);
+__MUSL_LEAF __MUSL_NOALIAS void *memccpy (void *__restrict, const void *__restrict, int, size_t);
 #endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-char *strsep(char **, const char *);
-size_t strlcat (char *, const char *, size_t);
-size_t strlcpy (char *, const char *, size_t);
-void explicit_bzero (void *, size_t);
+__MUSL_LEAF __MUSL_NOALIAS char *strsep(char **, const char *);
+__MUSL_LEAF __MUSL_NOALIAS size_t strlcat (char *, const char *, size_t);
+__MUSL_LEAF __MUSL_NOALIAS size_t strlcpy (char *, const char *, size_t);
+__MUSL_LEAF __MUSL_NOALIAS void explicit_bzero (void *, size_t);
 #endif
 
 #ifdef _GNU_SOURCE
 #define	strdupa(x)	strcpy(alloca(strlen(x)+1),x)
-int strverscmp (const char *, const char *);
-char *strchrnul(const char *, int);
-char *strcasestr(const char *, const char *);
-void *memrchr(const void *, int, size_t);
-void *mempcpy(void *, const void *, size_t);
+__MUSL_PURE __MUSL_LEAF int strverscmp (const char *, const char *);
+__MUSL_PURE __MUSL_LEAF char *strchrnul(const char *, int);
+__MUSL_PURE __MUSL_LEAF char *strcasestr(const char *, const char *);
+__MUSL_PURE __MUSL_LEAF void *memrchr(const void *, int, size_t);
+__MUSL_LEAF __MUSL_NOALIAS void *mempcpy(void *, const void *, size_t);
 #ifndef __cplusplus
-char *basename(const char *);
+__MUSL_PURE __MUSL_LEAF char *basename(const char *);
 #endif
 #endif
 

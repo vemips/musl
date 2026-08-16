@@ -13,11 +13,11 @@ int fflush(FILE *f)
 		if (__stderr_used) r |= fflush(__stderr_used);
 
 		for (f=*__ofl_lock(); f; f=f->next) {
-#ifndef _MUSL_VEMIPS
+#if !MUSL_VEMIPS_WITHOUT_LOCKS
 			FLOCK(f);
 #endif
 			if (f->wpos != f->wbase) r |= fflush(f);
-#ifndef _MUSL_VEMIPS
+#if !MUSL_VEMIPS_WITHOUT_LOCKS
 			FUNLOCK(f);
 #endif
 		}
@@ -26,7 +26,7 @@ int fflush(FILE *f)
 		return r;
 	}
 
-#ifndef _MUSL_VEMIPS
+#if !MUSL_VEMIPS_WITHOUT_LOCKS
 	FLOCK(f);
 #endif
 
@@ -34,7 +34,7 @@ int fflush(FILE *f)
 	if (f->wpos != f->wbase) {
 		f->write(f, 0, 0);
 		if (!f->wpos) {
-#ifndef _MUSL_VEMIPS
+#if !MUSL_VEMIPS_WITHOUT_LOCKS
 			FUNLOCK(f);
 #endif
 			return EOF;
@@ -48,7 +48,7 @@ int fflush(FILE *f)
 	f->wpos = f->wbase = f->wend = 0;
 	f->rpos = f->rend = 0;
 
-#ifndef _MUSL_VEMIPS
+#if !MUSL_VEMIPS_WITHOUT_LOCKS
 	FUNLOCK(f);
 #endif
 	return 0;

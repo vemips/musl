@@ -1,14 +1,14 @@
 #include "pthread_impl.h"
 #include "fork_impl.h"
 
-#ifndef _MUSL_VEMIPS
+#if !MUSL_VEMIPS_WITHOUT_LOCKS
 static volatile int vmlock[2];
 volatile int *const __vmlock_lockptr = vmlock;
 #endif
 
 void __vm_wait()
 {
-#ifndef _MUSL_VEMIPS
+#if !MUSL_VEMIPS_WITHOUT_LOCKS
 	int tmp;
 	while ((tmp=vmlock[0]))
 		__wait(vmlock, vmlock+1, tmp, 1);
@@ -17,14 +17,14 @@ void __vm_wait()
 
 void __vm_lock()
 {
-#ifndef _MUSL_VEMIPS
+#if !MUSL_VEMIPS_WITHOUT_LOCKS
 	a_inc(vmlock);
 #endif
 }
 
 void __vm_unlock()
 {
-#ifndef _MUSL_VEMIPS
+#if !MUSL_VEMIPS_WITHOUT_LOCKS
 	if (a_fetch_add(vmlock, -1)==1 && vmlock[1])
 		__wake(vmlock, -1, 1);
 #endif

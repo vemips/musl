@@ -20,7 +20,7 @@ struct sockaddr_un {
 };
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-size_t strlen(const char *);
+__MUSL_PURE __MUSL_LEAF size_t strlen(const char *);
 #define SUN_LEN(s) (2+strlen((s)->sun_path))
 #endif
 

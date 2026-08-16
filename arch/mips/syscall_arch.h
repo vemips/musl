@@ -15,6 +15,14 @@
 	"$14", "$15", "$24", "$25", "hi", "lo", "memory"
 #endif
 
+#if MUSL_WITH_VEMIPS_SYSCALL_ABI
+struct __syscall_result_vemips
+{
+	long value0;
+	long value1;
+};
+#endif
+
 static inline long __syscall0(long n)
 {
 	register long r7 __asm__("$7");
@@ -53,6 +61,65 @@ static inline long __syscall2(long n, long a, long b)
 		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
 	return r7 && r2>0 ? -r2 : r2;
 }
+
+#if MUSL_WITH_VEMIPS_SYSCALL_ABI
+static inline struct __syscall_result_vemips __syscall_vemips0(long n)
+{
+	register long r7 __asm__("$7");
+	register long r2 __asm__("$2");
+	__asm__ __volatile__ (
+		"addu $2,$0,%2 ; syscall"
+		: "=&r"(r2), "=r"(r7)
+		: "ir"(n | (1 << 31)), "0"(r2)
+		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
+
+	struct __syscall_result_vemips result = {
+		r2,
+		r7
+	};
+
+	return result;
+}
+
+static inline struct __syscall_result_vemips __syscall_vemips1(long n, long a)
+{
+	register long r4 __asm__("$4") = a;
+	register long r7 __asm__("$7");
+	register long r2 __asm__("$2");
+	__asm__ __volatile__ (
+		"addu $2,$0,%2 ; syscall"
+		: "=&r"(r2), "=r"(r7)
+		: "ir"(n | (1 << 31)), "0"(r2), "r"(r4)
+		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
+
+	struct __syscall_result_vemips result = {
+		r2,
+		r7
+	};
+
+	return result;
+}
+
+static inline struct __syscall_result_vemips __syscall_vemips2(long n, long a, long b)
+{
+	register long r4 __asm__("$4") = a;
+	register long r5 __asm__("$5") = b;
+	register long r7 __asm__("$7");
+	register long r2 __asm__("$2");
+	__asm__ __volatile__ (
+		"addu $2,$0,%2 ; syscall"
+		: "=&r"(r2), "=r"(r7)
+		: "ir"(n | (1 << 31)), "0"(r2), "r"(r4), "r"(r5)
+		: SYSCALL_CLOBBERLIST, "$8", "$9", "$10");
+
+	struct __syscall_result_vemips result = {
+		r2,
+		r7
+	};
+
+	return result;
+}
+#endif
 
 static inline long __syscall3(long n, long a, long b, long c)
 {

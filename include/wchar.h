@@ -49,59 +49,59 @@ extern "C" {
 #undef WEOF
 #define WEOF 0xffffffffU
 
-wchar_t *wcscpy (wchar_t *__restrict, const wchar_t *__restrict);
-wchar_t *wcsncpy (wchar_t *__restrict, const wchar_t *__restrict, size_t);
+__MUSL_LEAF __MUSL_NOALIAS wchar_t *wcscpy (wchar_t *__restrict, const wchar_t *__restrict);
+__MUSL_LEAF __MUSL_NOALIAS wchar_t *wcsncpy (wchar_t *__restrict, const wchar_t *__restrict, size_t);
 
-wchar_t *wcscat (wchar_t *__restrict, const wchar_t *__restrict);
-wchar_t *wcsncat (wchar_t *__restrict, const wchar_t *__restrict, size_t);
+__MUSL_LEAF __MUSL_NOALIAS wchar_t *wcscat (wchar_t *__restrict, const wchar_t *__restrict);
+__MUSL_LEAF __MUSL_NOALIAS wchar_t *wcsncat (wchar_t *__restrict, const wchar_t *__restrict, size_t);
 
-int wcscmp (const wchar_t *, const wchar_t *);
-int wcsncmp (const wchar_t *, const wchar_t *, size_t);
+__MUSL_PURE __MUSL_LEAF int wcscmp (const wchar_t *, const wchar_t *);
+__MUSL_PURE __MUSL_LEAF int wcsncmp (const wchar_t *, const wchar_t *, size_t);
 
-int wcscoll(const wchar_t *, const wchar_t *);
-size_t wcsxfrm (wchar_t *__restrict, const wchar_t *__restrict, size_t);
+__MUSL_PURE __MUSL_LEAF int wcscoll(const wchar_t *, const wchar_t *);
+__MUSL_LEAF __MUSL_NOALIAS size_t wcsxfrm (wchar_t *__restrict, const wchar_t *__restrict, size_t);
 
-wchar_t *wcschr (const wchar_t *, wchar_t);
-wchar_t *wcsrchr (const wchar_t *, wchar_t);
+__MUSL_PURE __MUSL_LEAF wchar_t *wcschr (const wchar_t *, wchar_t);
+__MUSL_PURE __MUSL_LEAF wchar_t *wcsrchr (const wchar_t *, wchar_t);
 
-size_t wcscspn (const wchar_t *, const wchar_t *);
-size_t wcsspn (const wchar_t *, const wchar_t *);
-wchar_t *wcspbrk (const wchar_t *, const wchar_t *);
+__MUSL_PURE __MUSL_LEAF size_t wcscspn (const wchar_t *, const wchar_t *);
+__MUSL_PURE __MUSL_LEAF size_t wcsspn (const wchar_t *, const wchar_t *);
+__MUSL_PURE __MUSL_LEAF wchar_t *wcspbrk (const wchar_t *, const wchar_t *);
 
-wchar_t *wcstok (wchar_t *__restrict, const wchar_t *__restrict, wchar_t **__restrict);
+__MUSL_LEAF __MUSL_NOALIAS wchar_t *wcstok (wchar_t *__restrict, const wchar_t *__restrict, wchar_t **__restrict);
 
-size_t wcslen (const wchar_t *);
+__MUSL_PURE __MUSL_LEAF size_t wcslen (const wchar_t *);
 
-wchar_t *wcsstr (const wchar_t *__restrict, const wchar_t *__restrict);
-wchar_t *wcswcs (const wchar_t *, const wchar_t *);
+__MUSL_PURE __MUSL_LEAF wchar_t *wcsstr (const wchar_t *__restrict, const wchar_t *__restrict);
+__MUSL_PURE __MUSL_LEAF wchar_t *wcswcs (const wchar_t *, const wchar_t *);
 
-wchar_t *wmemchr (const wchar_t *, wchar_t, size_t);
-int wmemcmp (const wchar_t *, const wchar_t *, size_t);
-wchar_t *wmemcpy (wchar_t *__restrict, const wchar_t *__restrict, size_t);
-wchar_t *wmemmove (wchar_t *, const wchar_t *, size_t);
-wchar_t *wmemset (wchar_t *, wchar_t, size_t);
+__MUSL_PURE __MUSL_LEAF wchar_t *wmemchr (const wchar_t *, wchar_t, size_t);
+__MUSL_PURE __MUSL_LEAF int wmemcmp (const wchar_t *, const wchar_t *, size_t);
+__MUSL_LEAF __MUSL_NOALIAS wchar_t *wmemcpy (wchar_t *__restrict, const wchar_t *__restrict, size_t);
+__MUSL_LEAF __MUSL_NOALIAS wchar_t *wmemmove (wchar_t *, const wchar_t *, size_t);
+__MUSL_LEAF __MUSL_NOALIAS wchar_t *wmemset (wchar_t *, wchar_t, size_t);
 
-wint_t btowc (int);
-int wctob (wint_t);
+__MUSL_CONST __MUSL_LEAF wint_t btowc (int);
+__MUSL_CONST __MUSL_LEAF int wctob (wint_t);
 
-int mbsinit (const mbstate_t *);
-size_t mbrtowc (wchar_t *__restrict, const char *__restrict, size_t, mbstate_t *__restrict);
-size_t wcrtomb (char *__restrict, wchar_t, mbstate_t *__restrict);
+__MUSL_PURE __MUSL_LEAF int mbsinit (const mbstate_t *);
+__MUSL_LEAF __MUSL_NOALIAS size_t mbrtowc (wchar_t *__restrict, const char *__restrict, size_t, mbstate_t *__restrict);
+__MUSL_LEAF __MUSL_NOALIAS size_t wcrtomb (char *__restrict, wchar_t, mbstate_t *__restrict);
 
-size_t mbrlen (const char *__restrict, size_t, mbstate_t *__restrict);
+__MUSL_PURE __MUSL_LEAF size_t mbrlen (const char *__restrict, size_t, mbstate_t *__restrict);
 
-size_t mbsrtowcs (wchar_t *__restrict, const char **__restrict, size_t, mbstate_t *__restrict);
-size_t wcsrtombs (char *__restrict, const wchar_t **__restrict, size_t, mbstate_t *__restrict);
+__MUSL_LEAF __MUSL_NOALIAS size_t mbsrtowcs (wchar_t *__restrict, const char **__restrict, size_t, mbstate_t *__restrict);
+__MUSL_LEAF __MUSL_NOALIAS size_t wcsrtombs (char *__restrict, const wchar_t **__restrict, size_t, mbstate_t *__restrict);
 
-float wcstof (const wchar_t *__restrict, wchar_t **__restrict);
-double wcstod (const wchar_t *__restrict, wchar_t **__restrict);
-long double wcstold (const wchar_t *__restrict, wchar_t **__restrict);
+__MUSL_LEAF __MUSL_NOALIAS float wcstof (const wchar_t *__restrict, wchar_t **__restrict);
+__MUSL_LEAF __MUSL_NOALIAS double wcstod (const wchar_t *__restrict, wchar_t **__restrict);
+__MUSL_LEAF __MUSL_NOALIAS long double wcstold (const wchar_t *__restrict, wchar_t **__restrict);
 
-long wcstol (const wchar_t *__restrict, wchar_t **__restrict, int);
-unsigned long wcstoul (const wchar_t *__restrict, wchar_t **__restrict, int);
+__MUSL_LEAF __MUSL_NOALIAS long wcstol (const wchar_t *__restrict, wchar_t **__restrict, int);
+__MUSL_LEAF __MUSL_NOALIAS unsigned long wcstoul (const wchar_t *__restrict, wchar_t **__restrict, int);
 
-long long wcstoll (const wchar_t *__restrict, wchar_t **__restrict, int);
-unsigned long long wcstoull (const wchar_t *__restrict, wchar_t **__restrict, int);
+__MUSL_LEAF __MUSL_NOALIAS long long wcstoll (const wchar_t *__restrict, wchar_t **__restrict, int);
+__MUSL_LEAF __MUSL_NOALIAS unsigned long long wcstoull (const wchar_t *__restrict, wchar_t **__restrict, int);
 
 
 
@@ -154,45 +154,45 @@ int fputws_unlocked (const wchar_t *__restrict, FILE *__restrict);
 #endif
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-size_t wcsftime_l (wchar_t *__restrict, size_t, const wchar_t *__restrict, const struct tm *__restrict, locale_t);
+__MUSL_LEAF __MUSL_NOALIAS size_t wcsftime_l (wchar_t *__restrict, size_t, const wchar_t *__restrict, const struct tm *__restrict, locale_t);
 #endif
 
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)  || defined(_BSD_SOURCE)
 FILE *open_wmemstream(wchar_t **, size_t *);
-size_t mbsnrtowcs(wchar_t *__restrict, const char **__restrict, size_t, size_t, mbstate_t *__restrict);
-size_t wcsnrtombs(char *__restrict, const wchar_t **__restrict, size_t, size_t, mbstate_t *__restrict);
-wchar_t *wcsdup(const wchar_t *);
-size_t wcsnlen (const wchar_t *, size_t);
-wchar_t *wcpcpy (wchar_t *__restrict, const wchar_t *__restrict);
-wchar_t *wcpncpy (wchar_t *__restrict, const wchar_t *__restrict, size_t);
-int wcscasecmp(const wchar_t *, const wchar_t *);
-int wcscasecmp_l(const wchar_t *, const wchar_t *, locale_t);
-int wcsncasecmp(const wchar_t *, const wchar_t *, size_t);
-int wcsncasecmp_l(const wchar_t *, const wchar_t *, size_t, locale_t);
-int wcscoll_l(const wchar_t *, const wchar_t *, locale_t);
-size_t wcsxfrm_l(wchar_t *__restrict, const wchar_t *__restrict, size_t, locale_t);
+__MUSL_LEAF __MUSL_NOALIAS size_t mbsnrtowcs(wchar_t *__restrict, const char **__restrict, size_t, size_t, mbstate_t *__restrict);
+__MUSL_LEAF __MUSL_NOALIAS size_t wcsnrtombs(char *__restrict, const wchar_t **__restrict, size_t, size_t, mbstate_t *__restrict);
+__MUSL_MALLOCA(free, 1) __MUSL_WARN_DISCARD wchar_t *wcsdup(const wchar_t *);
+__MUSL_PURE __MUSL_LEAF size_t wcsnlen (const wchar_t *, size_t);
+__MUSL_LEAF __MUSL_NOALIAS wchar_t *wcpcpy (wchar_t *__restrict, const wchar_t *__restrict);
+__MUSL_LEAF __MUSL_NOALIAS wchar_t *wcpncpy (wchar_t *__restrict, const wchar_t *__restrict, size_t);
+__MUSL_PURE __MUSL_LEAF int wcscasecmp(const wchar_t *, const wchar_t *);
+__MUSL_PURE __MUSL_LEAF int wcscasecmp_l(const wchar_t *, const wchar_t *, locale_t);
+__MUSL_PURE __MUSL_LEAF int wcsncasecmp(const wchar_t *, const wchar_t *, size_t);
+__MUSL_PURE __MUSL_LEAF int wcsncasecmp_l(const wchar_t *, const wchar_t *, size_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int wcscoll_l(const wchar_t *, const wchar_t *, locale_t);
+__MUSL_LEAF __MUSL_NOALIAS size_t wcsxfrm_l(wchar_t *__restrict, const wchar_t *__restrict, size_t, locale_t);
 #endif
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
-int wcwidth (wchar_t);
-int wcswidth (const wchar_t *, size_t);
-int       iswalnum(wint_t);
-int       iswalpha(wint_t);
-int       iswblank(wint_t);
-int       iswcntrl(wint_t);
-int       iswdigit(wint_t);
-int       iswgraph(wint_t);
-int       iswlower(wint_t);
-int       iswprint(wint_t);
-int       iswpunct(wint_t);
-int       iswspace(wint_t);
-int       iswupper(wint_t);
-int       iswxdigit(wint_t);
-int       iswctype(wint_t, wctype_t);
-wint_t    towlower(wint_t);
-wint_t    towupper(wint_t);
-wctype_t  wctype(const char *);
+__MUSL_CONST __MUSL_LEAF int wcwidth (wchar_t);
+__MUSL_PURE __MUSL_LEAF  int wcswidth (const wchar_t *, size_t);
+__MUSL_CONST __MUSL_LEAF int       iswalnum(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswalpha(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswblank(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswcntrl(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswdigit(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswgraph(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswlower(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswprint(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswpunct(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswspace(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswupper(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswxdigit(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswctype(wint_t, wctype_t);
+__MUSL_CONST __MUSL_LEAF wint_t    towlower(wint_t);
+__MUSL_CONST __MUSL_LEAF wint_t    towupper(wint_t);
+__MUSL_PURE __MUSL_LEAF  wctype_t  wctype(const char *);
 
 #ifndef __cplusplus
 #undef iswdigit

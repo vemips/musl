@@ -78,11 +78,11 @@ int clone (int (*)(void *), void *, int, void *, ...);
 int unshare(int);
 int setns(int, int);
 
-void *memcpy(void *__restrict, const void *__restrict, size_t);
-int memcmp(const void *, const void *, size_t);
-void *memset (void *, int, size_t);
-void *calloc(size_t, size_t);
-void free(void *);
+__MUSL_NOALIAS __MUSL_LEAF void *memcpy(void *__restrict, const void *__restrict, size_t);
+__MUSL_PURE __MUSL_LEAF int memcmp(const void *, const void *, size_t);
+__MUSL_NOALIAS __MUSL_LEAF void *memset (void *, int, size_t);
+__MUSL_MALLOCA(free, 1) __MUSL_ALLOCSIZE(1, 2) __MUSL_LEAF __MUSL_WARN_DISCARD void *calloc(size_t, size_t);
+__MUSL_LEAF void free(void *);
 
 typedef struct cpu_set_t { unsigned long __bits[128/sizeof(long)]; } cpu_set_t;
 int __sched_cpucount(size_t, const cpu_set_t *);

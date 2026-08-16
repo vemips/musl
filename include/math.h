@@ -48,9 +48,9 @@ extern "C" {
 #define FP_FAST_FMAL 1
 #endif
 
-int __fpclassify(double);
-int __fpclassifyf(float);
-int __fpclassifyl(long double);
+__MUSL_CONST __MUSL_LEAF int __fpclassify(double);
+__MUSL_CONST __MUSL_LEAF int __fpclassifyf(float);
+__MUSL_CONST __MUSL_LEAF int __fpclassifyl(long double);
 
 static __inline unsigned __FLOAT_BITS(float __f)
 {
@@ -90,9 +90,9 @@ static __inline unsigned long long __DOUBLE_BITS(double __f)
 	sizeof(x) == sizeof(double) ? (__DOUBLE_BITS(x) & -1ULL>>1) < 0x7ffULL<<52 : \
 	__fpclassifyl(x) > FP_INFINITE)
 
-int __signbit(double);
-int __signbitf(float);
-int __signbitl(long double);
+__MUSL_CONST __MUSL_LEAF int __signbit(double);
+__MUSL_CONST __MUSL_LEAF int __signbitf(float);
+__MUSL_CONST __MUSL_LEAF int __signbitl(long double);
 
 #define signbit(x) ( \
 	sizeof(x) == sizeof(float) ? (int)(__FLOAT_BITS(x)>>31) : \

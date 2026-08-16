@@ -1,3 +1,4 @@
+#if MUSL_WITH_VEMIPS
 #define _BSD_SOURCE
 #include <unistd.h>
 #include "syscall.h"
@@ -16,3 +17,4 @@ void vemips_dbg(long value0, ...)
 	va_end(ap);
 	(void)__syscall_ret(__syscall(SYS_debug,value0,a,b,c,d,e));
 }
+#endif

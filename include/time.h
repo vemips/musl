@@ -51,9 +51,9 @@ struct tm {
 	const char *__tm_zone;
 };
 
-clock_t clock (void);
+__MUSL_PURE __MUSL_LEAF clock_t clock (void);
 time_t time (time_t *);
-double difftime (time_t, time_t);
+__MUSL_CONST __MUSL_LEAF double difftime (time_t, time_t);
 time_t mktime (struct tm *);
 size_t strftime (char *__restrict, size_t, const char *__restrict, const struct tm *__restrict);
 struct tm *gmtime (const time_t *);

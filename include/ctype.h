@@ -7,20 +7,20 @@ extern "C" {
 
 #include <features.h>
 
-int   isalnum(int);
-int   isalpha(int);
-int   isblank(int);
-int   iscntrl(int);
-int   isdigit(int);
-int   isgraph(int);
-int   islower(int);
-int   isprint(int);
-int   ispunct(int);
-int   isspace(int);
-int   isupper(int);
-int   isxdigit(int);
-int   tolower(int);
-int   toupper(int);
+__MUSL_CONST __MUSL_LEAF int   isalnum(int);
+__MUSL_CONST __MUSL_LEAF int   isalpha(int);
+__MUSL_CONST __MUSL_LEAF int   isblank(int);
+__MUSL_CONST __MUSL_LEAF int   iscntrl(int);
+__MUSL_CONST __MUSL_LEAF int   isdigit(int);
+__MUSL_CONST __MUSL_LEAF int   isgraph(int);
+__MUSL_CONST __MUSL_LEAF int   islower(int);
+__MUSL_CONST __MUSL_LEAF int   isprint(int);
+__MUSL_CONST __MUSL_LEAF int   ispunct(int);
+__MUSL_CONST __MUSL_LEAF int   isspace(int);
+__MUSL_CONST __MUSL_LEAF int   isupper(int);
+__MUSL_CONST __MUSL_LEAF int   isxdigit(int);
+__MUSL_CONST __MUSL_LEAF int   tolower(int);
+__MUSL_CONST __MUSL_LEAF int   toupper(int);
 
 #ifndef __cplusplus
 static __inline int __isspace(int _c)
@@ -45,23 +45,23 @@ static __inline int __isspace(int _c)
 #define __NEED_locale_t
 #include <bits/alltypes.h>
 
-int   isalnum_l(int, locale_t);
-int   isalpha_l(int, locale_t);
-int   isblank_l(int, locale_t);
-int   iscntrl_l(int, locale_t);
-int   isdigit_l(int, locale_t);
-int   isgraph_l(int, locale_t);
-int   islower_l(int, locale_t);
-int   isprint_l(int, locale_t);
-int   ispunct_l(int, locale_t);
-int   isspace_l(int, locale_t);
-int   isupper_l(int, locale_t);
-int   isxdigit_l(int, locale_t);
-int   tolower_l(int, locale_t);
-int   toupper_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   isalnum_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   isalpha_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   isblank_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   iscntrl_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   isdigit_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   isgraph_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   islower_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   isprint_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   ispunct_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   isspace_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   isupper_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   isxdigit_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   tolower_l(int, locale_t);
+__MUSL_PURE __MUSL_LEAF int   toupper_l(int, locale_t);
 
-int   isascii(int);
-int   toascii(int);
+__MUSL_CONST __MUSL_LEAF int   isascii(int);
+__MUSL_CONST __MUSL_LEAF int   toascii(int);
 #define _tolower(a) ((a)|0x20)
 #define _toupper(a) ((a)&0x5f)
 #ifndef __cplusplus

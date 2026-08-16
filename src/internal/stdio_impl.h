@@ -6,7 +6,7 @@
 
 #define UNGET 8
 
-#ifndef _MUSL_VEMIPS
+#if !MUSL_VEMIPS_WITHOUT_LOCKS
 #define FFINALLOCK(f) ((f)->lock>=0 ? __lockfile((f)) : 0)
 #define FLOCK(f) int __need_unlock = ((f)->lock>=0 ? __lockfile((f)) : 0)
 #define FUNLOCK(f) do { if (__need_unlock) __unlockfile((f)); } while (0)

@@ -40,6 +40,8 @@ void *calloc(size_t m, size_t n)
 	void *p = malloc(n);
 	if (!p || (!__malloc_replaced && __malloc_allzerop(p)))
 		return p;
+#if !MUSL_WITH_VEMIPS
 	n = mal0_clear(p, n);
+#endif
 	return memset(p, 0, n);
 }

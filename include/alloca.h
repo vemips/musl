@@ -8,7 +8,7 @@ extern "C" {
 #define	__NEED_size_t
 #include <bits/alltypes.h>
 
-void *alloca(size_t);
+__MUSL_MALLOC __MUSL_ALLOCSIZE(1) __MUSL_LEAF __MUSL_WARN_DISCARD void *alloca(size_t);
 
 #define alloca __builtin_alloca
 

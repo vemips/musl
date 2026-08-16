@@ -14,24 +14,24 @@ extern "C" {
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE) || defined(_POSIX_SOURCE) \
  || (defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE+0 < 200809L) \
  || (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE+0 < 700)
-int bcmp (const void *, const void *, size_t);
-void bcopy (const void *, void *, size_t);
-void bzero (void *, size_t);
-char *index (const char *, int);
-char *rindex (const char *, int);
+__MUSL_PURE __MUSL_LEAF int bcmp (const void *, const void *, size_t);
+__MUSL_LEAF __MUSL_NOALIAS void bcopy (const void *, void *, size_t);
+__MUSL_LEAF __MUSL_NOALIAS void bzero (void *, size_t);
+__MUSL_PURE __MUSL_LEAF char *index (const char *, int);
+__MUSL_PURE __MUSL_LEAF char *rindex (const char *, int);
 #endif
 
 #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)  || defined(_BSD_SOURCE)
-int ffs (int);
-int ffsl (long);
-int ffsll (long long);
+__MUSL_CONST __MUSL_LEAF int ffs (int);
+__MUSL_CONST __MUSL_LEAF int ffsl (long);
+__MUSL_CONST __MUSL_LEAF int ffsll (long long);
 #endif
 
-int strcasecmp (const char *, const char *);
-int strncasecmp (const char *, const char *, size_t);
+__MUSL_PURE __MUSL_LEAF int strcasecmp (const char *, const char *);
+__MUSL_PURE __MUSL_LEAF int strncasecmp (const char *, const char *, size_t);
 
-int strcasecmp_l (const char *, const char *, locale_t);
-int strncasecmp_l (const char *, const char *, size_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int strcasecmp_l (const char *, const char *, locale_t);
+__MUSL_PURE __MUSL_LEAF int strncasecmp_l (const char *, const char *, size_t, locale_t);
 
 #ifdef __cplusplus
 }

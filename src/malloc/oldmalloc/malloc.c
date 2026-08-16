@@ -11,6 +11,10 @@
 #include "malloc_impl.h"
 #include "fork_impl.h"
 
+#if MUSL_WITH_VEMIPS
+#	include "syscall.h"
+#endif
+
 /* vemips */
 #include "../../vemips_common.h"
 /* ~vemips */
@@ -25,59 +29,56 @@
 
 static struct {
 	volatile uint64_t binmap;
-#if defined(_MUSL_VEMIPS)
-	struct bin bins[125];
-#else
 	struct bin bins[64];
-#endif
-#ifndef _MUSL_VEMIPS
+#if !MUSL_VEMIPS_WITHOUT_LOCKS
 	volatile int split_merge_lock[2];
 #endif
 } mal;
 
 /* Synchronization tools */
 
+#if MUSL_VEMIPS_WITHOUT_LOCKS
+#define lock(...)
+#define unlock(...)
+#else
 static inline void lock(volatile int *lk)
 {
-	#ifndef _MUSL_VEMIPS
 	int need_locks = libc.need_locks;
 	if (need_locks) {
 		while(a_swap(lk, 1)) __wait(lk, lk+1, 1, 1);
 		if (need_locks < 0) libc.need_locks = 0;
 	}
-	#endif
 }
 
 static inline void unlock(volatile int *lk)
 {
-	#ifndef _MUSL_VEMIPS
 	if (lk[0]) {
 		a_store(lk, 0);
 		if (lk[1]) __wake(lk, 1, 1);
 	}
-	#endif
 }
+#endif
 
 static inline void lock_bin(int i)
 {
-#ifndef _MUSL_VEMIPS
 	lock(mal.bins[i].lock);
-#endif
 	if (!mal.bins[i].head)
 		mal.bins[i].head = mal.bins[i].tail = BIN_TO_CHUNK(i);
 }
 
 static inline void unlock_bin(int i)
 {
-#ifndef _MUSL_VEMIPS
 	unlock(mal.bins[i].lock);
-#endif
 }
 
 static int first_set(uint64_t x)
 {
 #if 1
+#if MUSL_VEMIPS_WITHOUT_LOCKS && 0
+	return __builtin_ctzll(x);
+#else
 	return a_ctz_64(x);
+#endif
 #else
 	static const char debruijn64[64] = {
 		0, 1, 2, 53, 3, 7, 54, 27, 4, 38, 41, 8, 34, 55, 48, 28,
@@ -179,7 +180,7 @@ static int traverses_stack_p(uintptr_t old, uintptr_t new)
 
 static void *__expand_heap(size_t *pn)
 {
-#if defined(_MUSL_VEMIPS)
+#if MUSL_WITH_VEMIPS
 
 	/*
 	// vemips
@@ -188,15 +189,34 @@ static void *__expand_heap(size_t *pn)
 	*/
 
    size_t n = *pn;
-   /* n = (n + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1); */
 
-   uintptr_t brk = (uintptr_t)__syscall(SYS_sbrk, n);
-   if UNLIKELY(brk == (uintptr_t)-1)
+	if (n > SIZE_MAX/2) {
+		errno = ENOMEM;
+		return NULL;
+	}
+
+#if MUSL_WITH_VEMIPS_SYSCALL_ABI
+	struct __syscall_result_vemips result = __syscall_vemips1(SYS_sbrk, (long)n);
+	if UNLIKELY(result.value1 < 0)
+	{
+		errno = -result.value1;
+		return NULL;
+	}
+
+	long brk = result.value0;
+	n = result.value1;
+#else
+   long brk = (long)__syscall(SYS_sbrk, n);
+   if UNLIKELY(brk < 0)
    {
       errno = ENOMEM;
       return NULL;
    }
+#endif
+
    *pn = n;
+
+
    return (void *)brk;
 
 #else
@@ -276,7 +296,7 @@ static struct chunk *expand_heap(size_t n)
 static int adjust_size(size_t *n)
 {
 	/* Result of pointer difference must fit in ptrdiff_t. */
-#if defined(_MUSL_VEMIPS)
+#if MUSL_WITH_VEMIPS
 	if (*n-1 > PTRDIFF_MAX - SIZE_ALIGN) {
 #else
 	if (*n-1 > PTRDIFF_MAX - SIZE_ALIGN - PAGE_SIZE) {
@@ -296,8 +316,12 @@ static int adjust_size(size_t *n)
 static void unbin(struct chunk *c, int i)
 {
 	if (c->prev == c->next)
+#if MUSL_VEMIPS_WITHOUT_LOCKS && 0
+		mal.binmap &= ~(1ULL<<i);
+#else
 		a_and_64(&mal.binmap, ~(1ULL<<i));
-	c->prev->next = c->next;
+#endif
+		c->prev->next = c->next;
 	c->next->prev = c->prev;
 	c->csize |= C_INUSE;
 	NEXT_CHUNK(c)->psize |= C_INUSE;
@@ -310,7 +334,11 @@ static void bin_chunk(struct chunk *self, int i)
 	self->next->prev = self;
 	self->prev->next = self;
 	if (self->prev == BIN_TO_CHUNK(i))
+#if MUSL_VEMIPS_WITHOUT_LOCKS && 0
+		mal.binmap |= 1ULL<i;
+#else
 		a_or_64(&mal.binmap, 1ULL<<i);
+#endif
 }
 
 static void trim(struct chunk *self, size_t n)
@@ -344,7 +372,7 @@ void *malloc(size_t n)
 
 	if (adjust_size(&n) < 0) return 0;
 
-#if !defined(_MUSL_VEMIPS)
+#if !MUSL_WITH_VEMIPS
 	if (n > MMAP_THRESHOLD) {
 		size_t len = n + OVERHEAD + PAGE_SIZE - 1 & -PAGE_SIZE;
 		char *base = __mmap(0, len, PROT_READ|PROT_WRITE,
@@ -368,9 +396,7 @@ void *malloc(size_t n)
 		}
 		unlock_bin(i);
 	}
-#ifndef _MUSL_VEMIPS
 	lock(mal.split_merge_lock);
-#endif
 	for (mask = mal.binmap & -(1ULL<<i); mask; mask -= (mask&-mask)) {
 		j = first_set(mask);
 		lock_bin(j);
@@ -385,22 +411,18 @@ void *malloc(size_t n)
 	if (!mask) {
 		c = expand_heap(n);
 		if (!c) {
-#ifndef _MUSL_VEMIPS
 			unlock(mal.split_merge_lock);
-#endif
 			return 0;
 		}
 	}
 	trim(c, n);
-#ifndef _MUSL_VEMIPS
 	unlock(mal.split_merge_lock);
-#endif
 	return CHUNK_TO_MEM(c);
 }
 
 int __malloc_allzerop(void *p)
 {
-#if defined(_MUSL_VEMIPS)
+#if MUSL_WITH_VEMIPS
 	return 0;
 #else
 	return IS_MMAPPED(MEM_TO_CHUNK(p));
@@ -422,7 +444,7 @@ void *realloc(void *p, size_t n)
 
 	if (n<=n0 && n0-n<=DONTCARE) return p;
 
-#if !defined(_MUSL_VEMIPS)
+#if !MUSL_WITH_VEMIPS
 	if (IS_MMAPPED(self)) {
 		size_t extra = self->psize;
 		char *base = (char *)self - extra;
@@ -462,9 +484,7 @@ void *realloc(void *p, size_t n)
 		return CHUNK_TO_MEM(self);
 	}
 
-#ifndef _MUSL_VEMIPS
 	lock(mal.split_merge_lock);
-#endif
 
 	size_t nsize = next->csize & C_INUSE ? 0 : CHUNK_SIZE(next);
 	if (n0+nsize >= n) {
@@ -476,16 +496,12 @@ void *realloc(void *p, size_t n)
 			next = NEXT_CHUNK(next);
 			self->csize = next->psize = n0+nsize | C_INUSE;
 			trim(self, n);
-#ifndef _MUSL_VEMIPS
 			unlock(mal.split_merge_lock);
-#endif
 			return CHUNK_TO_MEM(self);
 		}
 		unlock_bin(i);
 	}
-#ifndef _MUSL_VEMIPS
 	unlock(mal.split_merge_lock);
-#endif
 
 copy_realloc:
 	/* As a last resort, allocate a new chunk and copy to it. */
@@ -504,9 +520,7 @@ void __bin_chunk(struct chunk *self)
 	/* Crash on corrupted footer (likely from buffer overflow) */
 	if (next->psize != self->csize) a_crash();
 
-#ifndef _MUSL_VEMIPS
 	lock(mal.split_merge_lock);
-#endif
 
 	size_t osize = CHUNK_SIZE(self), size = osize;
 
@@ -543,31 +557,35 @@ void __bin_chunk(struct chunk *self)
 	self->csize = size;
 	next->psize = size;
 	bin_chunk(self, i);
-#ifndef _MUSL_VEMIPS
 	unlock(mal.split_merge_lock);
-#endif
 
 	/* Replace middle of large chunks with fresh zero pages */
 	if (size > RECLAIM && (size^(size-osize)) > size-osize) {
-#if !defined(_MUSL_VEMIPS)
+#if !MUSL_WITH_VEMIPS
 		uintptr_t a = (uintptr_t)self + SIZE_ALIGN+PAGE_SIZE-1 & -PAGE_SIZE;
 		uintptr_t b = (uintptr_t)next - SIZE_ALIGN & -PAGE_SIZE;
+#else
+		uintptr_t a = (uintptr_t)self + SIZE_ALIGN;
+		uintptr_t b = (uintptr_t)next - SIZE_ALIGN;
 #endif
+#if !MUSL_WITH_VEMIPS
 		int e = errno;
-#if !defined(_MUSL_VEMIPS)
-#	if 1
+#if 1
 		__madvise((void *)a, b-a, MADV_DONTNEED);
-#	else
+#else
 		__mmap((void *)a, b-a, PROT_READ|PROT_WRITE,
 			MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED, -1, 0);
-#	endif
 #endif
 		errno = e;
+#elif 0
+		memset((void*)a, 0, b-a);
+#endif
 	}
 
 	unlock_bin(i);
 }
 
+#if !MUSL_WITH_VEMIPS
 static void unmap_chunk(struct chunk *self)
 {
 	size_t extra = self->psize;
@@ -579,6 +597,7 @@ static void unmap_chunk(struct chunk *self)
 	__munmap(base, len);
 	errno = e;
 }
+#endif
 
 void free(void *p)
 {
@@ -586,7 +605,7 @@ void free(void *p)
 
 	struct chunk *self = MEM_TO_CHUNK(p);
 
-#if !defined(_MUSL_VEMIPS)
+#if !MUSL_WITH_VEMIPS
 	if (IS_MMAPPED(self))
 		unmap_chunk(self);
 	else
@@ -615,7 +634,7 @@ void __malloc_donate(char *start, char *end)
 
 void __malloc_atfork(int who)
 {
-#ifndef _MUSL_VEMIPS
+#if !MUSL_VEMIPS_WITHOUT_LOCKS
 	if (who<0) {
 		lock(mal.split_merge_lock);
 		for (int i=0; i<64; i++)

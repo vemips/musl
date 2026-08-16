@@ -24,24 +24,24 @@ typedef const int * wctrans_t;
 
 #undef iswdigit
 
-int       iswalnum(wint_t);
-int       iswalpha(wint_t);
-int       iswblank(wint_t);
-int       iswcntrl(wint_t);
-int       iswdigit(wint_t);
-int       iswgraph(wint_t);
-int       iswlower(wint_t);
-int       iswprint(wint_t);
-int       iswpunct(wint_t);
-int       iswspace(wint_t);
-int       iswupper(wint_t);
-int       iswxdigit(wint_t);
-int       iswctype(wint_t, wctype_t);
-wint_t    towctrans(wint_t, wctrans_t);
-wint_t    towlower(wint_t);
-wint_t    towupper(wint_t);
-wctrans_t wctrans(const char *);
-wctype_t  wctype(const char *);
+__MUSL_CONST __MUSL_LEAF int       iswalnum(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswalpha(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswblank(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswcntrl(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswdigit(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswgraph(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswlower(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswprint(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswpunct(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswspace(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswupper(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswxdigit(wint_t);
+__MUSL_CONST __MUSL_LEAF int       iswctype(wint_t, wctype_t);
+__MUSL_CONST __MUSL_LEAF wint_t    towctrans(wint_t, wctrans_t);
+__MUSL_CONST __MUSL_LEAF wint_t    towlower(wint_t);
+__MUSL_CONST __MUSL_LEAF wint_t    towupper(wint_t);
+__MUSL_PURE __MUSL_LEAF wctrans_t wctrans(const char *);
+__MUSL_PURE __MUSL_LEAF wctype_t  wctype(const char *);
 
 #ifndef __cplusplus
 #undef iswdigit
@@ -51,24 +51,24 @@ wctype_t  wctype(const char *);
 #if defined(_POSIX_SOURCE) || defined(_POSIX_C_SOURCE) \
  || defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
 
-int iswalnum_l(wint_t, locale_t);
-int iswalpha_l(wint_t, locale_t);
-int iswblank_l(wint_t, locale_t);
-int iswcntrl_l(wint_t, locale_t);
-int iswdigit_l(wint_t, locale_t);
-int iswgraph_l(wint_t, locale_t);
-int iswlower_l(wint_t, locale_t);
-int iswprint_l(wint_t, locale_t);
-int iswpunct_l(wint_t, locale_t);
-int iswspace_l(wint_t, locale_t);
-int iswupper_l(wint_t, locale_t);
-int iswxdigit_l(wint_t, locale_t);
-int iswctype_l(wint_t, wctype_t, locale_t);
-wint_t towlower_l(wint_t, locale_t);
-wint_t towupper_l(wint_t, locale_t);
-wint_t towctrans_l(wint_t, wctrans_t, locale_t);
-wctrans_t wctrans_l(const char *, locale_t);
-wctype_t  wctype_l(const char *, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswalnum_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswalpha_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswblank_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswcntrl_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswdigit_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswgraph_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswlower_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswprint_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswpunct_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswspace_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswupper_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswxdigit_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF int iswctype_l(wint_t, wctype_t, locale_t);
+__MUSL_PURE __MUSL_LEAF wint_t towlower_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF wint_t towupper_l(wint_t, locale_t);
+__MUSL_PURE __MUSL_LEAF wint_t towctrans_l(wint_t, wctrans_t, locale_t);
+__MUSL_PURE __MUSL_LEAF wctrans_t wctrans_l(const char *, locale_t);
+__MUSL_PURE __MUSL_LEAF wctype_t  wctype_l(const char *, locale_t);
 
 #endif
 

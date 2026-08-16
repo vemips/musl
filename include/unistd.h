@@ -161,7 +161,7 @@ unsigned ualarm(unsigned, unsigned);
 #define L_INCR 1
 #define L_XTND 2
 int brk(void *);
-void *sbrk(intptr_t);
+__MUSL_MALLOC __MUSL_ALLOCSIZE(1) __MUSL_LEAF __MUSL_WARN_DISCARD void *sbrk(intptr_t);
 pid_t vfork(void);
 int vhangup(void);
 int chroot(const char *);

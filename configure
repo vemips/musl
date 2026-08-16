@@ -100,7 +100,11 @@ fi
 tryldflag () {
 printf "checking whether linker accepts %s... " "$2"
 echo "typedef int x;" > "$tmpc"
-if $CC $LDFLAGS_TRY -nostdlib "$2" -o /dev/null "$tmpc" ; then
+case "$OSTYPE" in
+  win32 | msys | cygwin) null_out="$tmpo";;
+  *) null_out="/dev/null";;
+esac
+if $CC $LDFLAGS_TRY -nostdlib "$2" -o "$null_out" "$tmpc" >/dev/null 2>&1 ; then
 printf "yes\n"
 eval "$1=\"\${$1} \$2\""
 eval "$1=\${$1# }"
@@ -221,6 +225,19 @@ set +C
 trap 'rm "$tmpc"' EXIT INT QUIT TERM HUP
 
 #
+# Get a temp object filename we can use
+#
+i=0
+set -C
+while : ; do i=$(($i+1))
+tmpo="./conf$$-$PPID-$i.o"
+2>|/dev/null > "$tmpo" && break
+test "$i" -gt 50 && fail "$0: cannot create temporary file $tmpo"
+done
+set +C
+trap 'rm -f "$tmpo"' EXIT INT QUIT TERM HUP
+
+#
 # Check that the requested malloc implementation exists
 #
 test -d "$srcdir/src/malloc/$malloc_dir" \
@@ -242,19 +259,21 @@ printf "checking for C compiler... "
 #trycc ${CROSS_COMPILE}gcc
 #trycc ${CROSS_COMPILE}c99
 #trycc ${CROSS_COMPILE}cc
-CFLAGS=-Wno-unused-value
+CFLAGS_TRY=-Wno-unused-value
 trycc mipsc
 printf "%s\n" "$CC"
 test -n "$CC" || { echo "$0: cannot find a C compiler" ; exit 1 ; }
 
 printf "checking whether C compiler works... "
 echo "typedef int x;" > "$tmpc"
-if output=$($CC $CPPFLAGS $CFLAGS -c -o /dev/null "$tmpc" 2>&1) ; then
+if output=$($CC $CPPFLAGS $CFLAGS $CFLAGS_TRY -c -o /dev/null "$tmpc" 2>&1) ; then
 printf "yes\n"
 else
 printf "no; compiler output follows:\n%s\n" "$output"
 exit 1
 fi
+
+CFLAGS_TRY=
 
 #
 # Figure out options to force errors on unknown flags.
@@ -465,7 +484,7 @@ tryflag CFLAGS_AUTO -fno-tree-ch
 fi
 test "$optimize" = yes && optimize="internal,malloc,string"
 
-CFLAGS_AUTO="$CFLAGS_AUTO -DMUSL_WITH_VEMIPS"
+CFLAGS_AUTO="$CFLAGS_AUTO -DMUSL_WITH_VEMIPS=1 -DMUSL_WITH_VEMIPS_SYSCALL_ABI=1" # -DMUSL_VEMIPS_WITHOUT_LOCKS
 
 if fnmatch 'no|size' "$optimize" ; then :
 else
@@ -498,6 +517,7 @@ tryflag CFLAGS_AUTO -pipe
 if fnmatch '-g*|*\ -g*' "$CFLAGS_AUTO $CFLAGS" ; then :
 else
 tryflag CFLAGS_AUTO -fomit-frame-pointer
+tryflag CFLAGS_AUTO -momit-leaf-frame-pointer
 fi
 
 #
@@ -803,7 +823,7 @@ printf "creating config.mak... "
 cmdline=$(quote "$0")
 for i ; do cmdline="$cmdline $(quote "$i")" ; done
 
-exec 3>&1 1>config.mak
+exec 3>&1 1>"config.mak"
 
 
 cat << EOF
